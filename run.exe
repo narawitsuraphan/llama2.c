@@ -1,0 +1,7 @@
+==========================================
+   Llama2.c GGUF 64-bit GPU Research
+==========================================
+
+Successfully loaded OpenCL Driver (Dynamic).
+[GPU] ตรวจพบการ์ดจอ: Ellesmere
+[GPU] ระบบประมวลผลบนการ์ดจอพร้อมใช้งาน (64-bit Mode)

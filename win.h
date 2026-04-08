@@ -6,8 +6,11 @@
 #include <time.h>
 #include <stdint.h>
 
-#define ssize_t int64_t
+#ifdef _MSC_VER
+#define ssize_t __int64
 #define ftell _ftelli64
+#define fseek _fseeki64
+#endif
 
 // Below code is originally from mman-win32
 //
@@ -60,7 +63,9 @@ int     mprotect(void *addr, size_t len, int prot);
 int     msync(void *addr, size_t len, int flags);
 int     mlock(const void *addr, size_t len);
 int     munlock(const void *addr, size_t len);
+#ifndef __MINGW32__
 int     clock_gettime(int clk_id, struct timespec *tp);
+#endif
 
 #ifdef __cplusplus
 };
