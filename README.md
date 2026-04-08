@@ -1,3 +1,51 @@
-Llama2.c GGUF 64-bit GPU Research Edition 🚀Developed by: NARWIT SURAPHAN (2026)This project is a research-driven optimization of the LLM inference system. It builds upon the foundation of llama2.c (by Andrej Karpathy), evolving it to support the modern GGUF metadata standard with 64-bit Double Precision (FP64) accuracy. The engine is accelerated using AMD RX 570 via a custom OpenCL backend.🛠 Technical Implementation1. Full 64-bit Precision ArchitectureThe entire calculation engine and memory management have been overhauled from 32-bit Float to 64-bit Double to achieve maximum numerical stability.Flexible Data Typing: Implemented via typedef double real_t;, ensuring the entire tensor processing pipeline uses double precision.Math Function Migration: Transitioned all intrinsic math functions from single-precision to double-precision:$sqrtf()$ (32-bit) $\rightarrow$ $sqrt()$ (64-bit)$expf()$ (32-bit) $\rightarrow$ $exp()$ (64-bit)$fabsf()$ (32-bit) $\rightarrow$ $fabs()$ (64-bit)64-byte Memory Alignment: Optimizes memory allocation for modern CPU/GPU architectures, maximizing data throughput for 64-bit structures.2. GGUF (v3) Parser from ScratchA custom GGUF parser was developed to bypass the limitations of legacy binary formats:Metadata KV Extraction: Automatically retrieves essential model parameters such as llama.embedding_length (Dimension) and llama.block_count (Layers) to configure the model dynamically.64-bit Tensor Mapping: Implements a robust system to locate Tensor names (e.g., token_embd.weight) and calculate precise 64-bit offsets for direct memory mapping.3. High-Precision Dequantization (Q4_0)To bridge the gap between compressed storage and high-precision inference, I developed a specialized dequantization layer:Q4_0 to FP64: Extracts 4-bit nibbles from GGUF super-blocks and computes them against the Delta (Scale) value, converting them directly into 64-bit Double in RAM. This preserves maximum accuracy during the expansion of compressed weights.4. AMD GPU Acceleration via OpenCLEngineered a custom GPU backend specifically for the Polaris architecture (AMD RX 570):Dynamic OpenCL Loader: Utilizes runtime loading of opencl.dll, allowing the application to execute on systems without requiring a full OpenCL SDK installation.Optimized Kernels: Written in OpenCL C with Loop Unrolling and Vectorized Loading to maximize Matrix Multiplication (MatMul) performance.FP64 Compute: Explicitly enables the cl_khr_fp64 extension within the kernel to maintain parity between CPU and GPU precision.✨ Key BenefitsSuperior Precision: 64-bit computation reduces cumulative floating-point errors across layers, allowing the model to maintain better context coherence compared to standard FP32 systems.Universal Compatibility: Full support for the widely-used GGUF format.Hardware Empowerment: Breathes new life into older hardware like the RX 570, enabling high-fidelity LLM inference.🚀 Getting Started1. CompilationUse GCC with optimization flags and OpenMP support:Bashgcc -Ofast -fopenmp -D_WIN32 -o run_gguf64.exe -I. run_gguf64.c win.c
-2. Running a ModelPass your desired GGUF model as an argument:Bash.\run_gguf64.exe <model_name>.gguf
-Research Note: This implementation focuses on the trade-offs between computational overhead and numerical accuracy in low-resource environments. Developed with ❤️ by Narwit Suraphan.
+# Llama2.c GGUF 64-bit GPU Research Edition 🚀
+
+Developed by: **NARWIT SURAPHAN** (2026)
+
+This project is a research-focused implementation of an LLM (Large Language Model) inference engine. It evolves the original **llama2.c** by Andrej Karpathy into a high-precision system supporting the **GGUF (v3)** standard with **64-bit Double Precision** (FP64) and **AMD GPU Acceleration**.
+
+---
+
+## 🛠 Technical Implementation
+
+### 1. Full 64-bit Precision Architecture
+The entire computation pipeline has been upgraded from 32-bit Float to **64-bit Double** to ensure maximum numerical stability and minimize rounding errors during deep layer transitions.
+* **Flexible Typedef:** Utilizing `typedef double real_t;` for system-wide precision control.
+* **Math Function Migration:** Replaced all single-precision functions with their double-precision counterparts:
+    * `sqrtf()` $\rightarrow$ `sqrt()`
+    * `expf()` $\rightarrow$ `exp()`
+    * `fabsf()` $\rightarrow$ `fabs()`
+* **64-byte Alignment:** Memory allocation is strictly aligned to 64 bytes to optimize data throughput for modern CPU/GPU architectures.
+
+### 2. Custom GGUF (v3) Parser
+Built from scratch to support the modern GGUF format, allowing the engine to handle industry-standard model files.
+* **Metadata KV Extraction:** Automatically parses Key-Value pairs to extract model hyperparameters like `llama.embedding_length` and `llama.block_count`.
+* **64-bit Tensor Mapping:** Implements precise offset calculation to map weights directly into memory with 64-bit accuracy.
+
+### 3. Optimized Dequantization (Q4_0 to FP64)
+Developed a specialized algorithm to bridge the gap between compressed 4-bit weights and high-precision inference.
+* **Nibble Processing:** Extracts 4-bit values from GGUF super-blocks and scales them directly into **64-bit Double** in real-time.
+
+### 4. AMD GPU Acceleration (OpenCL)
+Leverages the power of the **AMD RX 570 (Polaris)** via a custom OpenCL backend.
+* **Dynamic Loading:** Uses a runtime OpenCL loader, removing the need for users to manually install the full OpenCL SDK.
+* **Advanced Kernels:** Written in OpenCL C with **Loop Unrolling** and **Vectorized Loading** for peak Matrix Multiplication (MatMul) performance.
+* **FP64 Extension:** Activates `cl_khr_fp64` to maintain computational parity between the CPU and GPU.
+
+---
+
+## ✨ Key Benefits
+
+* **Higher Precision:** Reduces cumulative error across layers, helping the AI maintain context and logic more effectively than standard 32-bit systems.
+* **Modern Compatibility:** Runs standard GGUF models available in the AI community.
+* **Hardware Empowerment:** Optimizes performance for accessible hardware like the AMD RX 570.
+
+---
+
+## 🚀 Installation & Usage
+
+### 1. Compilation
+Compile using GCC with OpenMP and optimization flags:
+
+```bash
+gcc -Ofast -fopenmp -D_WIN32 -o run_gguf64.exe -I. run_gguf64.c win.c
